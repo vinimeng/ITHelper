@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
 
 namespace ITHelper
@@ -40,12 +36,12 @@ namespace ITHelper
 
         private void addButton_Click(object sender, EventArgs e)
         {
-            if (tituloProgramaTextBox.Text != "" && URLTextBox.Text != "")
+            if (tituloAbaTextBox.Text != "" && URLTextBox.Text != "")
             {
                 if (Uri.IsWellFormedUriString(URLTextBox.Text, UriKind.Absolute))
                 {
                     Aba a;
-                    a.titulo = tituloProgramaTextBox.Text;
+                    a.titulo = tituloAbaTextBox.Text;
                     a.URL = URLTextBox.Text;
                     a.tipo = TipoAba.WEB;
                     abasListBox.Items.Add(a);
@@ -58,13 +54,13 @@ namespace ITHelper
             }
             else
             {
-                if (tituloProgramaTextBox.Text == "" && URLTextBox.Text == "")
+                if (tituloAbaTextBox.Text == "" && URLTextBox.Text == "")
                 {
                     MessageBox.Show("Título da aba e URL devem estar preenchidos para uma aba ser inserida.", "Informação", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {
-                    if (tituloProgramaTextBox.Text == "")
+                    if (tituloAbaTextBox.Text == "")
                     {
                         MessageBox.Show("Título da aba deve estar preenchida para uma aba ser inserida.", "Informação", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
@@ -80,7 +76,11 @@ namespace ITHelper
         {
             if(abasListBox.SelectedItem != null)
             {
-                // código foda
+                Aba a = (Aba)abasListBox.SelectedItem;
+                a.titulo = tituloAbaTextBox.Text;
+                a.URL = URLTextBox.Text;
+                abasListBox.Items[abasListBox.SelectedIndex] = a;
+                hasBeenEdited = true;
             }
             else
             {
@@ -127,7 +127,7 @@ namespace ITHelper
 
         private bool closingCheck()
         {
-            if (hasBeenEdited || tituloOriginal != this.tituloProgramaTextBox.Text)
+            if (hasBeenEdited || tituloOriginal != tituloProgramaTextBox.Text)
             {
                 DialogResult dr = MessageBox.Show("Tem certeza que desejar cancelar? Existem edições que não foram salvas.", "Cancelar edição das configurações", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 return dr == DialogResult.Yes;
@@ -167,7 +167,7 @@ namespace ITHelper
             }
             else
             {
-                MessageBox.Show("Selecione alguma aba para modificar sua ordem.", "Informação", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Selecione alguma aba para editar sua ordem.", "Informação", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -200,19 +200,108 @@ namespace ITHelper
             }
             else
             {
-                MessageBox.Show("Selecione alguma aba para modificar sua ordem.", "Informação", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Selecione alguma aba para editar sua ordem.", "Informação", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
         private void salvarButton_Click(object sender, EventArgs e)
         {
-            if (!hasBeenEdited || tituloOriginal == this.tituloProgramaTextBox.Text)
+            if (hasBeenEdited || tituloOriginal != tituloProgramaTextBox.Text)
+            {
+                DialogResult dr = MessageBox.Show("Deseja salvar as edições feitas?", "Salvar alterações", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (dr == DialogResult.Yes)
+                {
+                    List<Aba> data = new List<Aba>();
+
+                    if (tituloProgramaTextBox.Text != "")
+                    {
+                        Aba titulo;
+                        titulo.titulo = tituloProgramaTextBox.Text;
+                        titulo.URL = "";
+                        titulo.tipo = TipoAba.PRINCIPAL;
+
+                        data.Add(titulo);
+                    }
+
+                    foreach (Aba p in abasListBox.Items)
+                        data.Add(p);
+
+                    string path = System.Reflection.Assembly.GetEntryAssembly().Location;
+                    path = Path.GetDirectoryName(path) + "\\config.ithelper";
+
+                    using (var file = File.OpenWrite(path))
+                    {
+                        var writer = new BinaryFormatter();
+                        writer.Serialize(file, data);
+                    }
+
+                    mf.reconfigure(data);
+                    Dispose();
+                }
+            } 
+            else
             {
                 Dispose();
             }
-            else
+        }
+
+        private void carregarConfigButton_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog procuraConfigFileDialog = new OpenFileDialog();
+            procuraConfigFileDialog.Title = "Carregar configuração";
+            procuraConfigFileDialog.Filter = "ITHelper|*.ithelper";
+            procuraConfigFileDialog.DefaultExt = ".ithelper";
+            if (procuraConfigFileDialog.ShowDialog() == DialogResult.OK)
             {
-                // código pika
+                try
+                {
+                    Stream openFile;
+                    if ((openFile = procuraConfigFileDialog.OpenFile()) != null)
+                    {
+                        configTextBox.Text = procuraConfigFileDialog.FileName;
+                        List<Aba> abaList = new List<Aba>();
+                        using (openFile)
+                        {
+                            var reader = new BinaryFormatter();
+                            abaList = (List<Aba>)reader.Deserialize(openFile);
+                        }
+
+                        if (abaList != null)
+                        {
+                            abasListBox.Items.Clear();
+                            foreach (Aba aba in abaList)
+                            {
+                                if (aba.tipo == TipoAba.PRINCIPAL)
+                                {
+                                    tituloProgramaTextBox.Text = aba.titulo;
+                                }
+                                else
+                                {
+                                    abasListBox.Items.Add(aba);
+                                }
+                            }
+                            hasBeenEdited = true;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Arquivo de configuração selecionado estava vazio.", "Informação", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                    }
+                }
+                catch(Exception ex)
+                {
+                    MessageBox.Show("Erro ao tentar carregar configuração. Erro original:" + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void abasListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (abasListBox.SelectedItem != null)
+            {
+                Aba a = (Aba)abasListBox.SelectedItem;
+                tituloAbaTextBox.Text = a.titulo;
+                URLTextBox.Text = a.URL;
             }
         }
     }

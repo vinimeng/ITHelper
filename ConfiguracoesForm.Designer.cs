@@ -119,6 +119,7 @@ namespace ITHelper
             this.abasListBox.Name = "abasListBox";
             this.abasListBox.Size = new System.Drawing.Size(560, 151);
             this.abasListBox.TabIndex = 5;
+            this.abasListBox.SelectedIndexChanged += new System.EventHandler(this.abasListBox_SelectedIndexChanged);
             // 
             // cancelarButton
             // 
@@ -158,6 +159,7 @@ namespace ITHelper
             this.carregarConfigButton.TabIndex = 10;
             this.carregarConfigButton.Text = "Carregar configuração";
             this.carregarConfigButton.UseVisualStyleBackColor = true;
+            this.carregarConfigButton.Click += new System.EventHandler(this.carregarConfigButton_Click);
             // 
             // editButton
             // 

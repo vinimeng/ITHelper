@@ -54,12 +54,12 @@ namespace ITHelper
             this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.configuracoesToolStripMenuItem});
             this.contextMenuStrip.Name = "contextMenuStrip1";
-            this.contextMenuStrip.Size = new System.Drawing.Size(181, 48);
+            this.contextMenuStrip.Size = new System.Drawing.Size(152, 26);
             // 
             // configuracoesToolStripMenuItem
             // 
             this.configuracoesToolStripMenuItem.Name = "configuracoesToolStripMenuItem";
-            this.configuracoesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.configuracoesToolStripMenuItem.Size = new System.Drawing.Size(151, 22);
             this.configuracoesToolStripMenuItem.Text = "Configurações";
             this.configuracoesToolStripMenuItem.Click += new System.EventHandler(this.configuracoesToolStripMenuItem_Click);
             // 
