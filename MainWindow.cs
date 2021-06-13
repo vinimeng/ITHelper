@@ -86,7 +86,7 @@ namespace ITHelper
                         webView.DefaultBackgroundColor = System.Drawing.Color.White;
                         webView.Location = new System.Drawing.Point(6, 6);
                         webView.Size = new System.Drawing.Size(1184, 575);
-                        webView.Name = a.titulo;
+                        webView.Name = "webView" + abas.TabPages.Count; ;
                         webView.Source = new Uri(a.URL, System.UriKind.Absolute);
                         webView.ZoomFactor = 1D;
                         ((System.ComponentModel.ISupportInitialize)(webView)).EndInit();
@@ -159,7 +159,7 @@ namespace ITHelper
                         webView.DefaultBackgroundColor = System.Drawing.Color.White;
                         webView.Location = new System.Drawing.Point(6, 6);
                         webView.Size = new System.Drawing.Size(1184, 575);
-                        webView.Name = a.titulo;
+                        webView.Name = "webView" + abas.TabPages.Count;
                         webView.Source = new Uri(a.URL, System.UriKind.Absolute);
                         webView.ZoomFactor = 1D;
                         ((System.ComponentModel.ISupportInitialize)(webView)).EndInit();
